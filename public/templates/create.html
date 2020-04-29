@@ -6,16 +6,29 @@
 <div class="ui column doubling stackable grid container">
   <div class="column page-container">
 	<h2>Create Poll : </h2>
-  </div>
-
-  <div>
-	<div>
-		<label>Enter Option A</label>
-		<input type="text"/>
+	<div class="poll-item">
+		<label>Poll Question: </label>
+		<input id="pollName" type="text"/>
 	</div>
-	<div>
+	<div class="poll-item">
+		<label>Enter Option A</label>
+		<input id="answerA" type="text"/>
+	</div>
+	<div class="poll-item">
 		<label>Enter Option B</label>
-		<input type="text"/>
+		<input id="answerB" type="text"/>
+	</div>
+	<div class="poll-item">
+		<label>Enter Option C</label>
+		<input id="answerC" type="text"/>
+	</div>
+	<div class="poll-item">
+		<label>Enter Option D</label>
+		<input id="answerD" type="text"/>
+	</div>
+	<div class="poll-item">
+		<label>Enter Option E</label>
+		<input id="answerE" type="text"/>
 	</div>
 	<div style="padding:35px;margin-bottom:10px;">
 		<button ng-click="createPoll()" class="ui primary button">Create Poll</button>

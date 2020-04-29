@@ -1,4 +1,8 @@
 
+.poll-item {
+	margin-bottom: 20px;
+}
+
 .error {
 	color: red;
 }

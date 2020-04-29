@@ -19,8 +19,35 @@ MongoClient.connect(dbUrl, function(err, client) {
 
 	app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html') });
 
-	app.post('submitPollAnswerById', function(req, res){
-		res.send("success");
+	app.post('/submitPollAnswerById', function(req, res){
+		var id = req.body.ID;
+		var selectedAnswer = req.body.selectedAnswer;
+		var username = req.body.username;
+
+		db.collection("polls").find({
+			ID: parseInt(req.body.ID)
+		}).toArray(function(err, result) {
+			var poll = result[0]
+			poll.completedBy.push(username);
+			if(selectedAnswer === "answerA") {
+				poll.answerACount++;
+			} else if (selectedAnswer === "answerB") {
+				poll.answerBCount++;
+			} else if (selectedAnswer === "answerC") {
+				poll.answerCCount++;
+			} else if (selectedAnswer === "answerD") {
+				poll.answerDCount++;
+			} else if (selectedAnswer === "answerE") {
+				poll.answerECount++;
+			}
+
+  			db.collection("polls").replaceOne({
+  				ID: parseInt(id)
+  			}, poll, function(err, updated) {
+  			  if (err) throw err;
+  			  res.send('success')
+  			});
+		})
 	});
 
 	app.post('/pollById', function(req, res) {
@@ -28,6 +55,7 @@ MongoClient.connect(dbUrl, function(err, client) {
 		db.collection("polls").find({
 			ID: parseInt(req.body.ID)
 		}).toArray(function(err, result) {
+			console.log(result)
 			res.send(result);
 		})
 		console.log('Completed /pollsById request');
@@ -61,32 +89,31 @@ MongoClient.connect(dbUrl, function(err, client) {
 		});
 	});
 
-	app.post('createPoll', function(req,res) {
-		var pollName = "";
-		var answerA  = "";
-		var answerB  = "";
-		var answerC  = "";
-		var answerD  = "";
-		var answerE  = "";
-
-		db.collection("polls").insertOne({
-			"pollName":"",
-			"answerA":"",
-			"answerB":"",
-			"answerC":"",
-			"answerD":"",
-			"completedBy": [],
-			"answerACount":0,
-			"answerBCount":0,
-			"answerCCount":0,
-			"answerDCount":0
-		}, function(err, res) {
-			if(err) { 
-				console.log(err);
-				res.send('error');
-			} else {
-				res.send('success');
-			}
+	app.post('/createPoll', function(req,res) {
+		db.collection("polls").find({}).toArray(function(err, result) {
+			var ID = result.length + 1;
+			db.collection("polls").insertOne({
+				"ID": ID,
+				"question":req.body.pollName,
+				"answerA":req.body.answerA,
+				"answerB":req.body.answerB,
+				"answerC":req.body.answerC,
+				"answerD":req.body.answerD,
+				"answerE":req.body.answerE,
+				"completedBy": [],
+				"answerACount":0,
+				"answerBCount":0,
+				"answerCCount":0,
+				"answerDCount":0,
+				"answerECount":0,
+			}, function(err) {
+				if(err) { 
+					console.log(err);
+					res.send('error');
+				} else {
+					res.send('success');
+				}
+			});
 		});
 	})
 
