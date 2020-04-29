@@ -19,6 +19,20 @@ MongoClient.connect(dbUrl, function(err, client) {
 
 	app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html') });
 
+	app.post('submitPollAnswerById', function(req, res){
+		res.send("success");
+	});
+
+	app.post('/pollById', function(req, res) {
+		console.log('Processing /pollById');
+		db.collection("polls").find({
+			ID: parseInt(req.body.ID)
+		}).toArray(function(err, result) {
+			res.send(result);
+		})
+		console.log('Completed /pollsById request');
+	});
+
 	app.post('/pollsByUser', function(req, res){
 		console.log('Proccessing /pollsByUser request')
 		var availablePolls = [];
@@ -29,8 +43,6 @@ MongoClient.connect(dbUrl, function(err, client) {
 				var poll = result[i];
 				var pollHasBeenCompleted = false;
 				for (j = 0; j < poll.completedBy.length;j++) {
-					console.log(username + " " + poll.completedBy[j]);
-					console.log(poll)
 					if(username === poll.completedBy[j]) {
 						pollHasBeenCompleted = true;
 					}
@@ -83,7 +95,6 @@ MongoClient.connect(dbUrl, function(err, client) {
 		var plaintextPassword = req.body.password
 		bcrypt.genSalt(saltRounds, function(err, salt) {
 		    bcrypt.hash(plaintextPassword, salt, function(err, hash) {
-		        // Store hash in your password DB.
 				db.collection("users").insertOne({
 					username:username,
 					password:hash

@@ -14,9 +14,8 @@
 
 <script>
 
-// PollDetail
+// PollDetail submit & server side part
 // PollResults
-
 // CreatePoll
 
 var app = angular.module("myApp", ["ngRoute"]);
@@ -26,22 +25,28 @@ app.constant('AppConstants', {
 });
 
 app.controller('PollResults',function($scope, $location){
-
+	$http.post('/pollById', { ID: $routeParams.id }).then(function(res){
+		$scope.poll = res.data.poll;
+	}, function(req, res){
+		console.log('Error occured while calling pollsByUser')
+	});
 });
 
-app.controller('PollDetail',function($scope, $location, $http){
-	
+app.controller('PollDetail',function($scope, $location, $http, CurrentPoll, $routeParams){
 	$scope.sumbitPoll = function() {
-		$location.url('/results/' + 2);
+		$http.post('/submitPollAnswerById', { ID: $routeParams.id }).then(function(res){
+			$location.url('/results/' + $routeParams.id );
+		}, function(req, res){
+			console.log('Error occured while calling pollsByUser')
+		});
 	}
 
 	$scope.back = function() {
 		$location.url('/dashboard');
 	}
 
-	$http.get('/pollById', { ID: 2 }).then(function(res){
-		console.log(res)
-		$scope.poll = res.data.poll;
+	$http.post('/pollById', { ID: $routeParams.id }).then(function(res){
+		$scope.poll = res.data[0];
 	}, function(req, res){
 		console.log('Error occured while calling pollsByUser')
 	});
@@ -49,13 +54,24 @@ app.controller('PollDetail',function($scope, $location, $http){
 
 app.controller('CreatePoll',function($scope, $location){
 	$scope.createPoll = function() {
+		$scope.answerA = $("#");
+		$scope.answerB = $("#");
+		$scope.answerC = $("#");
+		$scope.answerD = $("#");
+		$scope.answerE = $("#");
+
 		$http.post('/createPoll', {
 			"pollName":"",
-			"optionA":"",
-			"optionB":"",
-			"optionC":"",
-			"optionD":"",
-			"answerA": 0
+			"answerA":"",
+			"answerB":"",
+			"answerC":"",
+			"answerD":"",
+			"answerE":"",
+			"answerACount": 0,
+			"answerBCount": 0,
+			"answerCCount": 0,
+			"answerDCount": 0,
+			"answerECount":""
 		}).then(function(){
 			$location.url('/dashboard');
 		}, function(){
@@ -100,6 +116,19 @@ app.factory('CurrentUser', function() {
 		},
 		get: function(){
 			return user;
+		}
+	}
+})
+
+app.factory('CurrentPoll', function() {
+	var pollID = "";
+	return {
+		set: function(poll){
+			pollID = poll;
+			return pollID;
+		},
+		get: function(){
+			return pollID;
 		}
 	}
 })
