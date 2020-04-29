@@ -1,68 +1,203 @@
 <html>
 <head>
 	<base href="/">
+	<link rel="stylesheet" href="styles.css"/>
 	<link rel="stylesheet" href="semantic.min.css"/>
 	<link rel="stylesheet" href="semantic.min.js"/>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
 </head>
 <body ng-app="myApp">
-
-
-<p><a ng-href="/testtwo">Main</a></p>
-
-<a href="#!red">Red</a>
-<a href="#!green">Green</a>
-<a href="#!blue">Blue</a>
 
 <div ng-view></div>
 
 <script>
+
+// PollDetail
+// PollResults
+
+// CreatePoll
+
 var app = angular.module("myApp", ["ngRoute"]);
 
-app.controller('MainAdmin',function($scope){
-	console.log('MainAdmin ran')
+app.constant('AppConstants', {
+    baseUrl: 'http://localhost:3000/'
+});
+
+app.controller('PollResults',function($scope, $location){
+
+});
+
+app.controller('PollDetail',function($scope, $location, $http){
+	
+	$scope.sumbitPoll = function() {
+		$location.url('/results/' + 2);
+	}
+
+	$scope.back = function() {
+		$location.url('/dashboard');
+	}
+
+	$http.get('/pollById', { ID: 2 }).then(function(res){
+		console.log(res)
+		$scope.poll = res.data.poll;
+	}, function(req, res){
+		console.log('Error occured while calling pollsByUser')
+	});
+});
+
+app.controller('CreatePoll',function($scope, $location){
+	$scope.createPoll = function() {
+		$http.post('/createPoll', {
+			"pollName":"",
+			"optionA":"",
+			"optionB":"",
+			"optionC":"",
+			"optionD":"",
+			"answerA": 0
+		}).then(function(){
+			$location.url('/dashboard');
+		}, function(){
+			console.log('Error occured during CreatePoll')
+		});
+	}
+});
+
+app.controller('Dashboard',function($scope, $location, $http, CurrentUser) {
+	$scope.availablePolls = [];
+	$scope.completedPolls = [];
+
+	$scope.goToCreatePoll = function() {
+		$location.url('/admin');
+	}
+
+	$scope.navigateToPoll = function(poll) {
+		$location.url('/question/' + poll.ID);
+	}
+
+	$scope.navigateToResults = function(poll) {
+		$location.url('/results/' + poll.ID);
+	}
+	
+	$scope.availablePolls = [];
+	$scope.completedPolls = [];
+
+	$http.post('/pollsByUser', {username: CurrentUser.get()}).then(function(res){
+		$scope.availablePolls = res.data.availablePolls;
+		$scope.completedPolls = res.data.completedPolls;
+	}, function(req, res){
+		console.log('Error occured while calling pollsByUser')
+	});
+});
+
+app.factory('CurrentUser', function() {
+	var user = "";
+	return {
+		set: function(username){
+			user = username;
+			return user;
+		},
+		get: function(){
+			return user;
+		}
+	}
+})
+
+app.controller('Auth',function($scope, $location, $http, AppConstants, CurrentUser){
+	$scope.error = false;
+
+	$scope.login = function() {
+		var username = $("#username").val();
+		var password = $("#password").val();
+		$http.post('/login', {
+			'username': username,
+			'password': password,
+		}).then(function(res){
+			if(res.data === 'empty') {
+				$scope.error = true;
+			} else {
+				CurrentUser.set(username);
+				$location.url('/dashboard');				
+			}
+		}, function(){
+			console.log('Server error occured')
+		});
+	}
+
+	$scope.goToLogin = function() {
+		$location.url('/');
+	}
+
+	$scope.goToSignup = function() {
+		$location.url('/signup');
+	}
+
+	$scope.signup = function() {
+		$scope.error = false;
+		var username = 			$("#signup-username").val();
+		var password = 			$("#signup-password").val();
+		var reenterPassword = 	$("#signup-reenterpassword").val();
+
+		var validationCheck = false;
+		if(username && password && reenterPassword) {
+			if(password === reenterPassword) {
+				validationCheck = true;
+			}
+		}
+
+		if(!validationCheck) {
+			$scope.error = true;
+			return;
+		}
+
+		$http.post('/signup', {
+			'username': username,
+			'password': password
+		}).then(function(response) {
+			if(response !== "failed") {
+				$location.url('/');
+			} else {
+				console.log('unable to sign up. try again')
+			}
+		}, function(){
+			console.log('Error occured during log in')
+		});
+	}
 })
 
 app.config(function($routeProvider,$locationProvider) {
   $routeProvider
   .when("/", {
-    templateUrl : "/main.html",
-    controller: 'MainAdmin'
+    templateUrl : "/templates/login.html",
+    controller: 'Auth'
   })
-  .when("/testtwo", {
-    templateUrl : "/new.html",
-    controller: 'MainAdmin'
+  .when("/signup", {
+    templateUrl : "/templates/signup.html",
+    controller: 'Auth'
   })
-  .when("/green", {
-    templateUrl : "green.htm"
+  .when("/dashboard", {
+    templateUrl : "/templates/main.html",
+    controller: 'Dashboard'
   })
-  .when("/blue", {
-    templateUrl : "blue.htm"
+  //
+  .when("/question/:id", {
+    templateUrl : "/templates/polldetail.html",
+    controller: 'PollDetail'
+  })
+  //
+  .when("/results/:id", {
+    templateUrl : "/templates/pollresults.html",
+    controller: 'PollResults'
+  })
+  .when("/admin", {
+    templateUrl : "/templates/create.html",
+    controller: 'CreatePoll'
   });
-$locationProvider.html5Mode(true);
+  $locationProvider.html5Mode(true);
 });
 
 </script>
-<div class="app">
-<div style="padding:35px;margin-bottom:10px;">
-	<button class="ui primary button">Create Poll</button>
-</div>
 
-<div class="ui column doubling stackable grid container">
-  <div class="column" style="margin:0 auto; text-align:center;">
-	<h2>Available Polls : </h2>
-	<div class="avaiable-polls">
-		<button class="ui primary button" style="padding: 15px; border:1px solid #eee;display:block;min-width:50%;margin: 0 auto;    margin-bottom: 30px;">How much screen time do you give your kids per day?</button>
-		<button class="ui primary button" style="margin:15px;padding: 15px; border:1px solid #eee;display:block;min-width:50%;margin: 0 auto;    margin-bottom: 30px;">poll A</button>
-		<button class="ui primary button" style="margin:15px;padding: 15px; border:1px solid #eee;display:block;width:50%;margin: 0 auto;    margin-bottom: 30px;">poll A</button>
-	</div>
-	<h2>Completed Polls : </h2>
-	<div class="completed-polls">
-		<button class="ui primary button" style="margin:15px;padding: 15px; border:1px solid #eee;display:block;width:50%;margin: 0 auto;    margin-bottom: 30px;">poll A</button>
-	</div>
-  </div>
-</div>
-</div>
 </body>
 </html>

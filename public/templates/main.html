@@ -1,0 +1,17 @@
+<div class="app">
+<div style="padding:35px;margin-bottom:10px;">
+	<button ng-click="goToCreatePoll()" class="ui primary button">Create Poll</button>
+</div>
+<div class="ui column doubling stackable grid container">
+  <div class="column page-container">
+	<h2>Available Polls : </h2>
+	<div class="avaiable-polls">
+		<button ng-click="navigateToPoll(poll)" ng-repeat="poll in availablePolls" class="ui primary button standard-button">{{poll.question}}</button>
+	</div>
+	<h2>Completed Polls : </h2>
+	<div class="completed-polls">
+		<button ng-click="navigateToResults(poll)" ng-repeat="poll in completedPolls" class="ui primary button standard-button">{{poll.question}}</button>
+	</div>
+  </div>
+</div>
+</div>

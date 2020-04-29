@@ -1,0 +1,27 @@
+<div class="app">
+<div style="padding:35px;margin-bottom:10px;">
+	<button ng-click="back()" class="ui primary button">Back</button>
+</div>
+<div class="ui column doubling stackable grid container">
+  <div class="column page-container">
+	<h2>Poll Name : </h2>
+	<div>
+		<div>
+			<input id="optionA" name='option' type="radio"/>
+			<label>{{poll.optionA}}</label>
+		</div>
+		<div>
+			<input id="optionB" name='option' type="radio"/>
+			<label>option B</label>
+		</div>
+		<div>
+			<input id="optionC" name='option' type="radio"/>
+			<label>option C</label>
+		</div>
+	</div>
+
+	<button ng-click="submitPoll()" class="ui primary button standard-button">Submit Poll</button>
+
+  </div>
+</div>
+</div>
